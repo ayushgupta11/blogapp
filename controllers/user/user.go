@@ -36,7 +36,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		result, err := collection.InsertOne(context.TODO(), user)
 
 		if err != nil {
-			helper.GetError(err, w)
+			w.WriteHeader(500)
+			w.Write([]byte("Internal Server Error"))
 			return
 		}
 
@@ -66,7 +67,8 @@ func EditUser(w http.ResponseWriter, r *http.Request) {
 		}
 		err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&newUser)
 		if err != nil {
-			helper.GetError(err, w)
+			w.WriteHeader(500)
+			w.Write([]byte("Internal Server Error"))
 			return
 		}
 		newUser.ID = id
@@ -135,7 +137,8 @@ func SearchUser(w http.ResponseWriter, r *http.Request) {
 	cur, err := collection.Find(context.TODO(), filter)
 
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(500)
+		w.Write([]byte("Internal Server Error"))
 		return
 	}
 	defer cur.Close(context.TODO())

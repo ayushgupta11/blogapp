@@ -101,7 +101,8 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 	cur, err := collection.Find(context.TODO(), bson.M{}, findOptions)
 
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(500)
+		w.Write([]byte("Internal Server Error"))
 		return
 	}
 	defer cur.Close(context.TODO())
@@ -128,13 +129,15 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var params = mux.Vars(r)
 	id, err := primitive.ObjectIDFromHex(params["id"])
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(500)
+		w.Write([]byte("Internal Server Error"))
 		return
 	}
 	filter := bson.M{"_id": id}
 	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(500)
+		w.Write([]byte("Internal Server Error"))
 		return
 	}
 	json.NewEncoder(w).Encode(deleteResult)
