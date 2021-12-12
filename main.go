@@ -4,9 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"blogapp/helper"
-	"blogapp/controllers/user"
 	"blogapp/controllers/posts"
+	"blogapp/controllers/user"
+	"blogapp/helper"
+
 	"github.com/gorilla/mux"
 )
 
@@ -17,7 +18,7 @@ func main() {
 	r.HandleFunc("/api/user/login", user.LoginUser).Methods("POST")
 	r.HandleFunc("/api/user/{id}", user.GetUser).Methods("GET")
 	r.HandleFunc("/api/user/{id}", user.EditUser).Methods("PUT")
-	// r.HandleFunc("/api/user/search", searchUser).Methods("POST")
+	r.HandleFunc("/api/user/search", user.SearchUser).Methods("POST")
 
 	r.HandleFunc("/api/posts", posts.GetPosts).Methods("GET")
 	r.HandleFunc("/api/posts", posts.CreatePost).Methods("POST")

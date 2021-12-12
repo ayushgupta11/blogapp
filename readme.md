@@ -8,7 +8,7 @@ You can import the same in your postman application.
 
 ## Architecture
 - main.go
-- helper [//]: <> (Helper files used across the project.)
-- controllers [//]: <> (Controllers for Users & Posts API.)
-- models [//]: <> (Schemas for MongoDB models.)
+- helper (Helper files used across the project.)
+- controllers (Controllers for Users & Posts API.)
+- models [//] (Schemas for MongoDB models.)
 

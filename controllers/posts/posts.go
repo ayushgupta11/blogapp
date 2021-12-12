@@ -5,15 +5,16 @@ import (
 	"blogapp/models"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
-
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //Connection mongoDB with helper class
@@ -25,13 +26,25 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var post models.Post
 	_ = json.NewDecoder(r.Body).Decode(&post)
 	post.PostedOn = time.Now()
-	result, err := collection.InsertOne(context.TODO(), post)
-	if err != nil {
-		helper.GetError(err, w)
-		return
+	var thumbnailUrl = "http://google.com/"
+	if post.Thumbnail != "" {
+		thumbnailUrl = post.Thumbnail
 	}
-
-	json.NewEncoder(w).Encode(result)
+	u, err := url.ParseRequestURI(thumbnailUrl)
+	fmt.Println(u)
+	if err != nil {
+		w.WriteHeader(422)
+		w.Write([]byte("Bad request"))
+		return
+	} else {
+		result, err := collection.InsertOne(context.TODO(), post)
+		if err != nil {
+			w.WriteHeader(422)
+			w.Write([]byte("Bad request"))
+			return
+		}
+		json.NewEncoder(w).Encode(result)
+	}
 }
 
 func EditPost(w http.ResponseWriter, r *http.Request) {
@@ -52,13 +65,25 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 				{"thumbnail", post.Thumbnail},
 			}},
 		}
-		err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&newPost)
-		if err != nil {
-			helper.GetError(err, w)
-			return
+		var thumbnailUrl = "http://google.com/"
+		if post.Thumbnail != "" {
+			thumbnailUrl = post.Thumbnail
 		}
-		newPost.ID = id
-		json.NewEncoder(w).Encode(newPost)
+		u, err := url.ParseRequestURI(thumbnailUrl)
+		fmt.Println(u)
+		if err != nil {
+			w.WriteHeader(422)
+			w.Write([]byte("Bad request"))
+			return
+		} else {
+			err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&newPost)
+			if err != nil {
+				helper.GetError(err, w)
+				return
+			}
+			newPost.ID = id
+			json.NewEncoder(w).Encode(newPost)
+		}
 	} else {
 		w.WriteHeader(422)
 		w.Write([]byte("Bad request"))
