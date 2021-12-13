@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -27,5 +28,5 @@ func main() {
 
 	config := helper.GetConfiguration()
 	log.Fatal(http.ListenAndServe(config.Port, r))
-
+	fmt.Println("Server started at port ", config.Port)
 }

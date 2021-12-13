@@ -23,25 +23,38 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var user models.User
+	var existingUser models.User
 	_ = json.NewDecoder(r.Body).Decode(&user)
-	user.Password = hash.HashAndSalt([]byte(user.Password))
-	layout := "2006-01-02"
-	str := user.Dob
-	t, err := time.Parse(layout, str)
-	fmt.Println(t)
+	filter := bson.M{"username": user.Username}
+	err := collection.FindOne(context.TODO(), filter).Decode(&existingUser)
 	if err != nil {
+		fmt.Println(err)
+		// w.WriteHeader(500)
+		// w.Write([]byte("Internal Server Error"))
+		// return
+	}
+	if existingUser.Username != "" {
 		w.WriteHeader(422)
-		w.Write([]byte("Bad request. Please enter date in YYYY-MM-DD format."))
+		w.Write([]byte("Username already taken. Please use a different one."))
+		return
 	} else {
-		result, err := collection.InsertOne(context.TODO(), user)
-
+		user.Password = hash.HashAndSalt([]byte(user.Password))
+		layout := "2006-01-02"
+		str := user.Dob
+		t, err := time.Parse(layout, str)
+		fmt.Println(t)
 		if err != nil {
-			w.WriteHeader(500)
-			w.Write([]byte("Internal Server Error"))
-			return
+			w.WriteHeader(422)
+			w.Write([]byte("Bad request. Please enter date in YYYY-MM-DD format."))
+		} else {
+			result, err := collection.InsertOne(context.TODO(), user)
+			if err != nil {
+				w.WriteHeader(500)
+				w.Write([]byte("Internal Server Error"))
+				return
+			}
+			json.NewEncoder(w).Encode(result)
 		}
-
-		json.NewEncoder(w).Encode(result)
 	}
 }
 
@@ -50,7 +63,6 @@ func EditUser(w http.ResponseWriter, r *http.Request) {
 
 	var params = mux.Vars(r)
 	id, _ := primitive.ObjectIDFromHex(params["id"])
-
 	var user models.User
 	var newUser models.User
 	filter := bson.M{"_id": id}
